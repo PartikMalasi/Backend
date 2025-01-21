@@ -1,9 +1,11 @@
-import { asyncHandler } from "./async.middleware";
-import { User } from "../models/user.model";
+import asyncHandler from "../utils/asyncHandler.js";
+import { User } from "../models/user.modal.js";
 import jwt from "jsonwebtoken";
+import ApiError from "../utils/ApiError.js";
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   try {
     const token = req.cookies?.accessToken;
+    console.log(token);
 
     if (!token) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -13,9 +15,10 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       token,
       process.env.ACCESS_TOKEN_SECRET
     );
+    console.log(decodedToken);
 
-    const user = await User.findById(decodedToken?._id).select(
-      "-password i-refreshToken"
+    const user = await User.findById(decodedToken._id).select(
+      "-password -refreshToken"
     );
 
     if (!user) {
@@ -25,6 +28,8 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
 
     next();
   } catch (error) {
-    throw new ApiError(500, "Error verifying token");
+    console.log(error);
+
+    throw new ApiError(500, "Error verifying token:" + error);
   }
 });

@@ -5,6 +5,8 @@ import uploadOnCloudinary from "../utils/cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 const registerUser = asyncHandler(async (req, res) => {
   //get user data from request body
+  console.log("hji");
+
   const { fullName, email, password, username } = req.body;
   console.log(fullName, email, password, username);
 
@@ -17,10 +19,13 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existUser) {
     throw new ApiError(409, "User already exists");
   }
+  console.log("idr");
 
   // check for images and avatar
   const avatarLocalPath = req.files?.avatar[0]?.path;
   const coverLocalPath = req.files?.coverImage[0]?.path;
+  console.log(avatarLocalPath, coverLocalPath);
+
   if (req.files?.avatar.length > 1 || req.files?.coverImage.length > 1) {
     console.log(avatarLocalPath, coverLocalPath);
   }
@@ -64,14 +69,18 @@ const registerUser = asyncHandler(async (req, res) => {
 const generateRefreshTokenAndAccessToken = async (userId) => {
   try {
     const user = await User.findById(userId);
+    // console.log(user);
     const refreshToken = await user.generateRefreshToken();
     const accessToken = await user.generateAccessToken();
+    console.log(refreshToken, accessToken);
 
     user.refreshToken = refreshToken;
     user.save({ validateBeforeSave: false });
 
     return { refreshToken, accessToken };
   } catch (error) {
+    console.error("Token generation error:", error);
+
     throw new ApiError(500, "Error generating tokens");
   }
 };
@@ -82,11 +91,13 @@ const loginUser = asyncHandler(async (req, res) => {
   // find the user
   // check password
   // generate token
+  console.log(req.body);
 
   const { email, username, password } = req.body;
-  if (!username && !email) {
+  if (!username || !email) {
     throw new ApiError(400, "Username or email is required");
   }
+  console.log(username, email, password);
 
   const user = await User.findOne({ $or: [{ email }, { username }] });
 
